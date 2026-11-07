@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Лапа и хвост, ветклиника: запись и напоминания о прививках</title>
+<meta name="description" content="Ветеринарная клиника: прививки, чипирование, лечение, хирургия. Онлайн-запись и бот, который сам напомнит о прививке. Демо-версия сайта.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Golos+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0e8f7e;
+    --teal-dark: #0a6b5e;
+    --ink: #12312d;
+    --cream: #fff8ef;
+    --milk: #ffffff;
+    --pale: #e8f5f2;
+    --coral: #ff7a59;
+    --sun: #ffcc4d;
+    --grey: #56706b;
+    --gut: clamp(16px, 4vw, 56px);
+    --top-h: 64px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body { font-family: "Golos Text", system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 18px; line-height: 1.55; overflow-x: hidden; }
+  a { color: inherit; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+  h1, h2, h3, .logo { font-family: "Unbounded", system-ui, sans-serif; font-weight: 800; letter-spacing: -.02em; line-height: 1.08; }
+  h2 { font-size: clamp(28px, 4.4vw, 56px); }
+  h3 { font-size: clamp(18px, 1.8vw, 22px); font-weight: 600; line-height: 1.25; }
+  .sec { padding: clamp(56px, 8vw, 110px) var(--gut); }
+  .kicker { color: var(--coral); font-weight: 700; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 12px; }
+  .lede { color: var(--grey); max-width: 46ch; margin-top: 14px; }
+
+  .demo-bar { background: var(--ink); color: #fff; font-size: 14px; padding: 8px var(--gut); }
+  .demo-bar a { color: var(--sun); font-weight: 700; }
+  .top { position: sticky; top: 0; z-index: 30; height: var(--top-h); background: rgba(255,248,239,.94); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 var(--gut); border-bottom: 1px solid #f0e4d4; }
+  .logo { display: inline-flex; align-items: center; gap: 10px; font-size: 18px; text-decoration: none; white-space: nowrap; }
+  .logo svg { width: 30px; height: 30px; color: var(--teal); }
+  .top nav { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 30px); font-size: 16px; }
+  .top nav a { text-decoration: none; }
+  .top nav a:hover { color: var(--teal); }
+  .top .tel { font-weight: 700; white-space: nowrap; }
+
+  .btn { display: inline-block; border: 0; cursor: pointer; text-decoration: none; text-align: center; font-weight: 700; padding: 16px 28px; border-radius: 999px; background: var(--coral); color: #fff; transition: transform .15s, box-shadow .15s; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(255,122,89,.35); }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+
+  /* Первый экран */
+  .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); align-items: center; gap: clamp(20px, 4vw, 60px); padding: clamp(36px, 6vw, 80px) var(--gut) clamp(40px, 6vw, 90px); }
+  .hero h1 { font-size: clamp(36px, 5.6vw, 84px); margin-bottom: clamp(16px, 2.2vw, 26px); }
+  .hero h1 em { font-style: normal; color: var(--teal); }
+  .hero p { font-size: clamp(18px, 1.6vw, 21px); max-width: 36ch; color: var(--grey); margin-bottom: clamp(22px, 3vw, 34px); }
+  .acts { display: flex; flex-wrap: wrap; gap: 12px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .badges span { background: var(--milk); border-radius: 999px; padding: 8px 14px; font-size: 15px; box-shadow: 0 2px 0 #f0e4d4; }
+  .pals { position: relative; width: min(100%, 520px); justify-self: center; aspect-ratio: 1; }
+  .pals .blob { position: absolute; inset: 6%; border-radius: 44% 56% 52% 48% / 50% 44% 56% 50%; background: var(--teal); }
+  .pals svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .blink { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+  .blink.late { animation-delay: 1.3s; }
+  @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+  .ear-l { transform-box: fill-box; transform-origin: 50% 0; animation: flop 3.2s ease-in-out infinite; }
+  @keyframes flop { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(6deg); } }
+  .heart { animation: float 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  /* Сцена: год питомца */
+  .year { position: relative; height: 380vh; background: var(--ink); color: #fff; }
+  .y-stick { position: sticky; top: var(--top-h); height: calc(100svh - var(--top-h)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .8fr); align-items: center; gap: clamp(16px, 3vw, 50px); padding: 0 var(--gut); overflow: hidden; }
+  .y-copy .kicker { color: var(--sun); }
+  .y-copy h2 { font-size: clamp(28px, 3.6vw, 50px); }
+  .y-copy p { color: #b9cbc7; margin-top: 14px; max-width: 34ch; }
+  .ring { position: relative; width: 100%; max-width: 440px; justify-self: center; aspect-ratio: 1; }
+  .ring svg { width: 100%; height: 100%; overflow: visible; }
+  .ring .mk circle { transition: fill .3s, r .3s; }
+  .ring .mk.on circle { fill: var(--sun); }
+  .ring .mk text { font: 600 13px "Golos Text", sans-serif; fill: #b9cbc7; transition: fill .3s; }
+  .ring .mk.on text { fill: #fff; }
+  .center { position: absolute; inset: 22%; border-radius: 50%; display: grid; place-items: center; text-align: center; }
+  .center b { display: block; font: 800 clamp(22px, 2.6vw, 34px)/1.1 "Unbounded", sans-serif; }
+  .center small { color: #b9cbc7; font-size: 15px; }
+  .phone { justify-self: center; width: min(300px, 100%); border-radius: 34px; padding: 12px; background: #050d0c; box-shadow: 0 0 0 2px #24423d, 0 30px 70px rgba(0,0,0,.5); }
+  .screen { border-radius: 24px; background: #eef4f2; color: var(--ink); padding: 14px 12px 18px; min-height: 380px; display: flex; flex-direction: column; gap: 9px; }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #d5e3df; font-size: 14px; font-weight: 700; }
+  .chat-head i { width: 34px; height: 34px; border-radius: 50%; background: var(--teal); display: grid; place-items: center; }
+  .chat-head i svg { width: 20px; height: 20px; color: #fff; }
+  .chat-head small { display: block; font-weight: 400; color: var(--grey); font-size: 12px; }
+  .bub { background: #fff; border-radius: 4px 16px 16px 16px; padding: 10px 12px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 0 #d5e3df; display: none; }
+  .bub.in { display: block; animation: pop .4s ease both; }
+  .bub .kb { display: flex; gap: 6px; margin-top: 8px; }
+  .bub .kb span { flex: 1; text-align: center; background: var(--teal); color: #fff; border-radius: 9px; padding: 6px 4px; font-size: 13px; font-weight: 500; }
+  .bub time { display: block; font-size: 11px; color: var(--grey); margin-bottom: 3px; }
+  @keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* Кто у вас */
+  .who h2 { margin-bottom: clamp(18px, 3vw, 30px); }
+  .pets { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: clamp(20px, 3vw, 34px); }
+  .pet { background: var(--milk); border: 0; cursor: pointer; padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 18px; box-shadow: 0 2px 0 #f0e4d4; }
+  .pet[aria-pressed="true"] { background: var(--teal); color: #fff; box-shadow: none; }
+  .card { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); background: var(--milk); border-radius: 28px; overflow: hidden; }
+  .card .ph { min-height: 320px; background: var(--pale); display: grid; place-items: center; }
+  .card .ph svg { width: 62%; max-width: 260px; height: auto; }
+  .card .tx { padding: clamp(22px, 3.4vw, 48px); }
+  .card h3 { font-family: "Unbounded"; font-size: clamp(22px, 2.6vw, 34px); font-weight: 800; margin-bottom: 12px; }
+  .card ul { list-style: none; margin: 14px 0 22px; }
+  .card li { padding: 8px 0; border-top: 2px solid var(--pale); }
+  .card .link { font-weight: 700; color: var(--teal); }
+
+  /* Запись */
+  .remind { background: var(--sun); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 76px); align-items: start; }
+  .remind .lede { color: var(--ink); margin-bottom: 24px; }
+  form { background: var(--milk); border-radius: 24px; padding: clamp(18px, 2.6vw, 30px); }
+  .field { display: block; margin-bottom: 14px; }
+  .field > span { display: block; font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .field input, .field select { width: 100%; background: var(--pale); border: 0; padding: 14px; border-radius: 12px; font-size: 17px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .agree { display: flex; gap: 10px; font-size: 14px; color: var(--grey); margin: 4px 0 12px; line-height: 1.4; }
+  .agree input { width: 20px; height: 20px; flex: none; accent-color: var(--teal); }
+  .err { color: #b3121f; font-size: 15px; min-height: 22px; margin-bottom: 6px; }
+  form .btn { width: 100%; background: var(--teal); }
+  .after { background: var(--milk); border-radius: 24px; padding: clamp(16px, 2.4vw, 26px); }
+  .after h3 { margin-bottom: 4px; }
+  .after > p { font-size: 15px; color: var(--grey); margin-bottom: 10px; }
+  .step { padding: 14px 0; border-top: 2px solid var(--pale); }
+  .when { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: var(--teal); }
+  .bubble { background: var(--pale); border-radius: 4px 16px 16px 16px; padding: 12px 14px; font-size: 16px; line-height: 1.45; white-space: pre-line; }
+  .bubble .kb { display: flex; gap: 6px; margin-top: 8px; }
+  .bubble .kb span { flex: 1; text-align: center; background: var(--teal); color: #fff; border-radius: 10px; padding: 8px 4px; font-size: 14px; font-weight: 500; }
+  .after.live .step { animation: pop .4s ease both; }
+  .after.live .step:nth-of-type(2) { animation-delay: .6s; } .after.live .step:nth-of-type(3) { animation-delay: 1.2s; }
+
+  /* Услуги */
+  .serv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 3.4vw, 50px); }
+  .serv > header { grid-column: 1 / -1; }
+  .serv h3 { margin-bottom: 10px; color: var(--teal); }
+  .serv ul { list-style: none; }
+  .serv li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 2px solid #f0e4d4; }
+  .serv b { white-space: nowrap; }
+  .pnote { grid-column: 1 / -1; font-size: 15px; color: var(--grey); }
+
+  /* Почему мы */
+  .why { background: var(--pale); }
+  .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
+  .why-grid div { background: var(--milk); border-radius: 22px; padding: 24px; }
+  .why-grid svg { width: 38px; height: 38px; color: var(--coral); margin-bottom: 12px; }
+  .why-grid p { color: var(--grey); font-size: 16px; margin-top: 6px; }
+
+  /* Контакты */
+  .where { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 60px); align-items: center; }
+  .where dt { font-size: 15px; color: var(--grey); margin-top: 16px; }
+  .where dd { font-weight: 700; font-size: clamp(19px, 2vw, 24px); line-height: 1.25; }
+  .where dd a { text-decoration: none; }
+  .map { position: relative; min-height: 320px; border-radius: 28px; overflow: hidden; background:
+      linear-gradient(90deg, transparent 46%, #fff 46% 52%, transparent 52%),
+      linear-gradient(0deg, transparent 56%, #fff 56% 61%, transparent 61%),
+      linear-gradient(30deg, transparent 68%, #f4ead9 68% 71%, transparent 71%),
+      #e6efe9; }
+  .pin { position: absolute; left: 49%; top: 58%; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; }
+  .pin span { background: var(--teal); color: #fff; font-weight: 700; font-size: 14px; padding: 8px 12px; border-radius: 10px; white-space: nowrap; }
+  .pin i { width: 14px; height: 14px; background: var(--teal); transform: rotate(45deg); margin-top: -8px; }
+  .map small { position: absolute; left: 14px; bottom: 12px; color: var(--grey); font-size: 13px; }
+
+  footer { background: var(--ink); color: #c4d6d2; padding: 28px var(--gut) 92px; font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 30px; }
+  footer a { color: var(--sun); }
+  .dock { display: none; }
+
+  @media (max-width: 1000px) {
+    .y-stick { grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; align-content: center; }
+    .y-copy { grid-column: 1 / -1; }
+  }
+  @media (max-width: 900px) {
+    .top nav a:not(.tel) { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .pals { width: min(80%, 380px); order: -1; }
+    .card { grid-template-columns: 1fr; }
+    .card .ph { min-height: 220px; }
+    .remind, .where { grid-template-columns: 1fr; }
+    .serv { grid-template-columns: 1fr; }
+    .why-grid { grid-template-columns: 1fr 1fr; }
+    .dock { display: grid; grid-template-columns: 1fr 1.6fr; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--ink); }
+    .dock a { color: #fff; text-align: center; padding: 16px 8px; font-weight: 700; text-decoration: none; }
+    .dock a + a { background: var(--coral); }
+  }
+  @media (max-width: 640px) {
+    .y-stick { grid-template-columns: 1fr; grid-template-rows: auto auto auto; align-content: start; gap: 10px; padding-top: 16px; }
+    .y-copy p { display: none; }
+    .ring { width: min(62vw, 34svh); }
+    .phone { width: 100%; padding: 0; background: none; box-shadow: none; }
+    .screen { min-height: 0; background: transparent; padding: 0; }
+    .chat-head { display: none; }
+    .bub.in { display: none; }
+    .bub.in.last { display: block; }
+    .why-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) { body { font-size: 17px; } .logo span { font-size: 15px; } .two { grid-template-columns: 1fr; gap: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .btn:hover { transform: none; }
+    .blink, .ear-l, .heart { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="paw" viewBox="0 0 32 32"><g fill="currentColor"><ellipse cx="16" cy="21" rx="7.5" ry="6.5"/><ellipse cx="7" cy="13" rx="3.2" ry="4"/><ellipse cx="25" cy="13" rx="3.2" ry="4"/><ellipse cx="12" cy="7" rx="3" ry="4"/><ellipse cx="20" cy="7" rx="3" ry="4"/></g></symbol>
+  <symbol id="cat" viewBox="0 0 200 200">
+    <path d="M38 92 L50 24 L92 62 Z" fill="#f7953d"/><path d="M162 92 L150 24 L108 62 Z" fill="#f7953d"/>
+    <path d="M52 76 L57 42 L80 63 Z" fill="#ffc4b0"/><path d="M148 76 L143 42 L120 63 Z" fill="#ffc4b0"/>
+    <ellipse cx="100" cy="112" rx="72" ry="64" fill="#f7953d"/>
+    <path d="M70 62 q6 12 0 22 M100 56 q6 14 0 26 M130 62 q-6 12 0 22" stroke="#e07a24" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <ellipse cx="100" cy="138" rx="36" ry="26" fill="#fff3e6"/>
+    <ellipse class="blink" cx="74" cy="108" rx="9" ry="12" fill="#12312d"/><ellipse class="blink" cx="126" cy="108" rx="9" ry="12" fill="#12312d"/>
+    <circle cx="77" cy="104" r="3" fill="#fff"/><circle cx="129" cy="104" r="3" fill="#fff"/>
+    <path d="M93 128 h14 l-7 8 z" fill="#ff7a8a"/>
+    <path d="M100 136 q-6 10 -14 6 M100 136 q6 10 14 6" stroke="#12312d" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M60 134 L22 128 M60 142 L24 148 M140 134 L178 128 M140 142 L176 148" stroke="#12312d" stroke-width="2.5" stroke-linecap="round" opacity=".6"/>
+  </symbol>
+  <symbol id="dog" viewBox="0 0 200 200">
+    <ellipse cx="100" cy="108" rx="66" ry="70" fill="#e8c39a"/>
+    <ellipse class="ear-l" cx="40" cy="96" rx="24" ry="50" fill="#8a5a3b"/>
+    <ellipse cx="160" cy="96" rx="24" ry="50" fill="#8a5a3b" transform="rotate(-10 160 96)"/>
+    <ellipse cx="128" cy="92" rx="22" ry="20" fill="#fff3e6"/>
+    <ellipse cx="100" cy="146" rx="42" ry="32" fill="#fff3e6"/>
+    <ellipse class="blink late" cx="78" cy="100" rx="8" ry="10" fill="#12312d"/><ellipse class="blink late" cx="124" cy="96" rx="8" ry="10" fill="#12312d"/>
+    <circle cx="80" cy="97" r="2.6" fill="#fff"/><circle cx="126" cy="93" r="2.6" fill="#fff"/>
+    <ellipse cx="100" cy="128" rx="15" ry="11" fill="#12312d"/>
+    <path d="M100 139 v8 M100 147 q-10 10 -20 2 M100 147 q10 10 20 2" stroke="#12312d" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M92 156 q8 22 16 0 z" fill="#ff7a8a"/>
+  </symbol>
+</svg>
+
+<div class="demo-bar">Демо-версия сайта ветклиники: название, цены и адрес для примера, заявки никуда не отправляются. Такой же сайт для вашей клиники: <a href="https://islam-dev-sites.vercel.app" target="_blank" rel="noopener">islam-dev-sites.vercel.app</a></div>
+
+<header class="top">
+  <a class="logo" href="#"><svg aria-hidden="true"><use href="#paw"/></svg><span>Лапа и хвост</span></a>
+  <nav>
+    <a href="#year">Напоминания</a>
+    <a href="#who">Кого лечим</a>
+    <a href="#services">Цены</a>
+    <a href="#where">Контакты</a>
+    <a class="tel" href="tel:+79000000000">+7 900 000-00-00</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <p class="kicker">Ветклиника · Черкесск</p>
+      <h1>Лечим так, как <em>лечили бы своих</em></h1>
+      <p>Прививки, анализы, хирургия и вызов на дом. Запишитесь онлайн, а о следующей прививке мы напомним сами.</p>
+      <div class="acts">
+        <a class="btn" href="#book">Записаться на приём</a>
+        <a class="btn ghost" href="tel:+79000000000">Позвонить</a>
+      </div>
+      <div class="badges"><span>Без очередей по записи</span><span>Вызов на дом</span><span>Каждый день 9–21</span></div>
+    </div>
+    <div class="pals" aria-hidden="true">
+      <div class="blob"></div>
+      <svg viewBox="0 0 400 400">
+        <use href="#dog" x="150" y="110" width="230" height="230"/>
+        <use href="#cat" x="30" y="150" width="210" height="210"/>
+        <g class="heart"><path d="M318 86 c-10 -18 -38 -10 -32 12 c4 14 32 30 32 30 c0 0 28 -16 32 -30 c6 -22 -22 -30 -32 -12 z" fill="#ff7a59"/></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Сцена: год питомца, напоминания приходят сами -->
+  <section class="year" id="year" aria-label="Как бот напоминает о прививках">
+    <div class="y-stick">
+      <div class="y-copy">
+        <p class="kicker">Бот-помощник</p>
+        <h2>Год питомца. Мы помним за вас</h2>
+        <p>Листайте и смотрите: бот сам пишет хозяину, когда пора на прививку, обработку от клещей или осмотр. Клиенты возвращаются, а администратору не нужно никого обзванивать.</p>
+      </div>
+      <div class="ring">
+        <svg viewBox="0 0 400 400" aria-hidden="true">
+          <circle cx="200" cy="200" r="150" fill="none" stroke="#24423d" stroke-width="16"/>
+          <circle id="arc" cx="200" cy="200" r="150" fill="none" stroke="#ffcc4d" stroke-width="16" stroke-linecap="round" transform="rotate(-90 200 200)" stroke-dasharray="942.5" stroke-dashoffset="942.5"/>
+          <g id="marks"></g>
+          <g id="walker"><circle r="20" fill="#ff7a59"/><use href="#paw" x="-11" y="-11" width="22" height="22" style="color:#fff"/></g>
+        </svg>
+        <div class="center"><div><b id="mon">Январь</b><small id="age">Барсику 1 год</small></div></div>
+      </div>
+      <div class="phone" aria-live="polite">
+        <div class="screen" id="feed">
+          <div class="chat-head"><i><svg><use href="#paw"/></svg></i><div>Лапа и хвост<small>бот клиники</small></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec who" id="who" aria-labelledby="wH">
+    <p class="kicker">Кого лечим</p>
+    <h2 id="wH">Кто у вас?</h2>
+    <div class="pets" id="pets" role="group" aria-labelledby="wH"></div>
+    <div class="card">
+      <div class="ph" id="pPh"></div>
+      <div class="tx" aria-live="polite">
+        <h3 id="pT"></h3>
+        <p id="pD"></p>
+        <ul id="pL"></ul>
+        <a class="link" href="#book">Записаться на приём →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec remind" id="book" aria-labelledby="bH">
+    <div>
+      <p class="kicker" style="color:var(--ink)">Онлайн-запись</p>
+      <h2 id="bH">Запись и напоминание о прививке</h2>
+      <p class="lede">Оставьте заявку, когда удобно, хоть ночью. А когда придёт время следующей прививки, бот напомнит сам.</p>
+      <form id="f" novalidate>
+        <div class="two">
+          <label class="field"><span>Кличка</span><input id="pet" placeholder="Например, Барсик"></label>
+          <label class="field"><span>Кто это</span><select id="kind"><option>Кот или кошка</option><option>Собака</option><option>Птица</option><option>Грызун</option><option>Другой зверь</option></select></label>
+        </div>
+        <label class="field"><span>Когда была последняя прививка</span><input id="last" type="date"></label>
+        <label class="field"><span>Телефон</span><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7"></label>
+        <label class="agree"><input id="ok" type="checkbox"><span>Согласен на обработку персональных данных и на сообщения от клиники.</span></label>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn" type="submit">Записаться</button>
+      </form>
+    </div>
+    <div class="after" id="after">
+      <h3 id="cT">Что будет после заявки</h3>
+      <p>Это пример, в демо сообщения никому не отправляются.</p>
+      <div class="step"><div class="when">Сразу, администратору</div><div class="bubble" id="m1">Новая заявка с сайта
+Питомец: Барсик, кот
+Телефон: +7 900 000-00-00<span class="kb"><span>Позвонить</span><span>Записать</span></span></div></div>
+      <div class="step"><div class="when" id="w2">За неделю до прививки, хозяину</div><div class="bubble" id="m2">Здравствуйте! Через неделю пора на прививку: Барсик. Записать вас?<span class="kb"><span>Да, записать</span><span>Напомнить позже</span></span></div></div>
+      <div class="step"><div class="when">После визита, хозяину</div><div class="bubble" id="m3">Как Барсик после приёма? Если всё хорошо, оставьте отзыв на Картах, нам будет приятно.<span class="kb"><span>Оставить отзыв</span></span></div></div>
+    </div>
+  </section>
+
+  <section class="sec serv" id="services" aria-labelledby="sH">
+    <header><p class="kicker">Цены</p><h2 id="sH">Что мы делаем</h2></header>
+    <div><h3>Профилактика</h3><ul><li><span>Комплексная прививка</span><b>от 1 500 ₽</b></li><li><span>Чипирование</span><b>от 1 600 ₽</b></li><li><span>Обработка от паразитов</span><b>от 400 ₽</b></li><li><span>Ветпаспорт</span><b>300 ₽</b></li></ul></div>
+    <div><h3>Лечение</h3><ul><li><span>Приём терапевта</span><b>от 800 ₽</b></li><li><span>Анализ крови</span><b>от 900 ₽</b></li><li><span>УЗИ</span><b>от 1 200 ₽</b></li><li><span>Стационар, сутки</span><b>от 1 500 ₽</b></li></ul></div>
+    <div><h3>Хирургия и уход</h3><ul><li><span>Кастрация кота</span><b>от 2 500 ₽</b></li><li><span>Стерилизация кошки</span><b>от 4 500 ₽</b></li><li><span>Чистка зубов</span><b>от 2 000 ₽</b></li><li><span>Вызов на дом</span><b>от 1 000 ₽</b></li></ul></div>
+    <p class="pnote">Цены на демо-сайте для примера. На вашем сайте будут ваши услуги и цены.</p>
+  </section>
+
+  <section class="sec why" aria-labelledby="yH">
+    <p class="kicker">Почему к нам</p>
+    <h2 id="yH">Спокойно и питомцу, и вам</h2>
+    <div class="why-grid">
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h3>Без очередей</h3><p>Приходите ко времени записи, ждать в коридоре не придётся.</p></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v10H8l-4 4z"/></svg><h3>Врач на связи</h3><p>После приёма можно задать вопрос в мессенджере.</p></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11 12 4l9 7v9H3z"/><path d="M10 20v-5h4v5"/></svg><h3>Вызов на дом</h3><p>Если питомцу тяжело ехать, приедем сами.</p></div>
+      <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><h3>Напомним сами</h3><p>О прививках и обработках бот напишет вовремя.</p></div>
+    </div>
+  </section>
+
+  <section class="sec where" id="where" aria-labelledby="cH">
+    <div>
+      <p class="kicker">Контакты</p>
+      <h2 id="cH">Как нас найти</h2>
+      <dl>
+        <dt>Адрес (для примера)</dt><dd>Черкесск, ул. Примерная, 1</dd>
+        <dt>Телефон</dt><dd><a href="tel:+79000000000">+7 900 000-00-00</a></dd>
+        <dt>Часы работы</dt><dd>Каждый день 9:00–21:00</dd>
+      </dl>
+    </div>
+    <div class="map" role="img" aria-label="Схема проезда (пример)">
+      <div class="pin"><span>Лапа и хвост</span><i></i></div>
+      <small>Здесь будет ваша Яндекс Карта</small>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>© «Лапа и хвост», демо-сайт ветклиники. Реквизиты и лицензия будут указаны на настоящем сайте.</span>
+  <span>Сделал Ислам. Хотите такой же? <a href="https://islam-dev-sites.vercel.app" target="_blank" rel="noopener">islam-dev-sites.vercel.app</a></span>
+</footer>
+
+<div class="dock"><a href="tel:+79000000000">Позвонить</a><a href="#book">Записаться</a></div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+/* ---------- Год питомца ---------- */
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const EVENTS = [
+  { m: 0,  label: 'Прививка', time: '10 января', text: 'Здравствуйте! Барсику пора на ежегодную прививку 💉 Записать вас?', kb: ['Да, в субботу', 'Позже'] },
+  { m: 3,  label: 'Клещи',    time: '1 апреля',  text: 'Весна, клещи проснулись 🕷 Пора обработать Барсика. Записать на обработку?', kb: ['Записать', 'Уже сделали'] },
+  { m: 6,  label: 'Осмотр',   time: '5 июля',    text: 'Полгода с прошлого визита. Приходите на бесплатный осмотр, это 15 минут 🩺', kb: ['Записаться'] },
+  { m: 9,  label: 'Зубы',     time: '3 октября', text: 'Напоминаем проверить зубы Барсику. Зубной камень лучше убрать вовремя 🦷', kb: ['Записать'] },
+  { m: 11, label: '', time: '27 декабря', text: 'Через две недели пора на прививку 💉 С наступающим! 🎄', kb: ['Записать на январь'] },
+];
+const R = 150, C = 2 * Math.PI * R, CX = 200, CY = 200;
+const pos = (t, r = R) => { const a = t * 2 * Math.PI - Math.PI / 2; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; };
+const marks = $('#marks');
+EVENTS.forEach((e, i) => {
+  const t = (e.m + .5) / 12, [x, y] = pos(t), [tx, ty] = pos(t, R + 34);
+  marks.insertAdjacentHTML('beforeend', `<g class="mk" data-i="${i}"><circle cx="${x}" cy="${y}" r="9" fill="#24423d" stroke="#12312d" stroke-width="4"/><text x="${tx}" y="${ty + 4}" text-anchor="middle">${e.label}</text></g>`);
+});
+const feed = $('#feed');
+const bubs = EVENTS.map(e => {
+  const d = document.createElement('div');
+  d.className = 'bub';
+  d.innerHTML = `<time>${e.time}</time>${e.text}<span class="kb">${e.kb.map(k => `<span>${k}</span>`).join('')}</span>`;
+  feed.append(d); return d;
+});
+const year = $('#year'), arc = $('#arc'), walker = $('#walker'), mon = $('#mon');
+const mkEls = [...marks.children];
+function renderYear() {
+  const r = year.getBoundingClientRect();
+  const p = Math.min(1, Math.max(0, -r.top / ((r.height - innerHeight) || 1)));
+  const t = Math.min(.999, p * 1.05);
+  arc.setAttribute('stroke-dashoffset', C * (1 - t));
+  const [x, y] = pos(t); walker.setAttribute('transform', `translate(${x} ${y})`);
+  mon.textContent = MONTHS[Math.floor(t * 12)];
+  let last = -1;
+  EVENTS.forEach((e, i) => {
+    const on = t >= (e.m + .5) / 12;
+    mkEls[i].classList.toggle('on', on);
+    bubs[i].classList.toggle('in', on);
+    if (on) last = i;
+  });
+  bubs.forEach((b, i) => { b.classList.toggle('last', i === last); if (i < last - 2) b.classList.remove('in'); });
+}
+let tick = false;
+addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(() => { renderYear(); tick = false; }); } }, { passive: true });
+addEventListener('resize', renderYear);
+renderYear();
+
+/* ---------- Кто у вас ---------- */
+const PAW = '<svg viewBox="0 0 32 32" style="color:var(--teal)"><use href="#paw"/></svg>';
+const PETS = [
+  { n: 'Кошка', pic: '<svg viewBox="0 0 200 200"><use href="#cat"/></svg>', t: 'Для кошек', d: 'Плановые прививки, чип и лечение, когда что-то не так.', l: ['Вакцинация и чипирование', 'Кастрация и стерилизация', 'Чистка зубов', 'Анализы и УЗИ'] },
+  { n: 'Собака', pic: '<svg viewBox="0 0 200 200"><use href="#dog"/></svg>', t: 'Для собак', d: 'От первой прививки щенка до наблюдения взрослой собаки.', l: ['Вакцинация и чипирование', 'Обработка от клещей', 'Хирургия', 'Вызов на дом'] },
+  { n: 'Грызун', pic: PAW, t: 'Для грызунов', d: 'Кролики, морские свинки, хомяки: с маленькими зверями тоже приходите.', l: ['Осмотр и консультация', 'Стрижка когтей и зубов', 'Советы по кормлению'] },
+  { n: 'Птица', pic: PAW, t: 'Для птиц', d: 'Попугаи и канарейки тоже наши пациенты.', l: ['Осмотр', 'Подрезка клюва и когтей', 'Советы по содержанию'] },
+];
+const box = $('#pets');
+PETS.forEach((p, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'pet'; b.textContent = p.n; b.setAttribute('aria-pressed', 'false');
+  b.addEventListener('click', () => show(i)); box.append(b);
+});
+function show(i) {
+  const p = PETS[i];
+  [...box.children].forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+  $('#pPh').innerHTML = p.pic; $('#pT').textContent = p.t; $('#pD').textContent = p.d;
+  $('#pL').innerHTML = p.l.map(x => `<li>${x}</li>`).join('');
+}
+show(0);
+
+/* ---------- Запись ---------- */
+const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const fmt = d => `${d.getDate()} ${months[d.getMonth()]}`;
+const safe = s => s.replace(/[<>&]/g, '');
+const kb = (...a) => `<span class="kb">${a.map(x => `<span>${x}</span>`).join('')}</span>`;
+$('#f').addEventListener('submit', e => {
+  e.preventDefault();
+  const pet = safe($('#pet').value.trim()), phone = safe($('#phone').value.trim()), err = $('#err');
+  if (!pet) { err.textContent = 'Укажите кличку.'; $('#pet').focus(); return; }
+  if (!$('#last').value) { err.textContent = 'Укажите дату последней прививки. Примерная тоже подойдёт.'; $('#last').focus(); return; }
+  if (phone.replace(/\D/g, '').length < 10) { err.textContent = 'Укажите телефон, минимум 10 цифр.'; $('#phone').focus(); return; }
+  if (!$('#ok').checked) { err.textContent = 'Отметьте согласие на обработку данных.'; return; }
+  err.textContent = '';
+  const last = new Date($('#last').value), next = new Date(last), now = new Date();
+  next.setFullYear(next.getFullYear() + 1);
+  const remind = new Date(next); remind.setDate(remind.getDate() - 7);
+  const late = next <= now;
+  $('#cT').textContent = 'Заявка отправлена. Вот что будет дальше';
+  $('#m1').innerHTML = `Новая заявка с сайта\nПитомец: ${pet}, ${$('#kind').value.toLowerCase()}\nПрививка: ${fmt(last)} ${last.getFullYear()}\nТелефон: ${phone}` + kb('Позвонить', 'Записать');
+  $('#w2').textContent = late ? 'Сегодня, хозяину' : `${fmt(remind)} ${remind.getFullYear()}, хозяину`;
+  $('#m2').innerHTML = (late ? `Здравствуйте! Похоже, уже пора на прививку: ${pet}. Прошёл год с последней.` : `Здравствуйте! Через неделю пора на прививку: ${pet}.`) + ' Точный срок подскажет врач. Записать вас?' + kb('Да, записать', 'Напомнить позже');
+  $('#m3').innerHTML = `Как ${pet} после приёма? Если всё хорошо, оставьте отзыв на Картах, нам будет приятно.` + kb('Оставить отзыв');
+  const c = $('#after'); c.classList.remove('live'); void c.offsetWidth; c.classList.add('live');
+  c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+});
+</script>
+</body>
+</html>
